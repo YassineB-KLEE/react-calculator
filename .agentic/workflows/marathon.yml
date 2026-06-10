@@ -26,9 +26,13 @@ steps:
       {{ inputs.objectif }}
 
       In your final answer: a SHORT map of the relevant code (components, state logic,
-      where operations are computed), the risks, and the lots you identified. Then end
-      your result with a PROPOSED_STEPS block (per the contract below) creating the steps
-      needed to reach the objective. Rules for the steps you propose:
+      where operations are computed), the risks, and the lots you identified.
+
+      CRITICAL — you are the ONLY step of this workflow: the steps you propose ARE the
+      plan. If you do not end with a PROPOSED_STEPS block, NOTHING will be executed and
+      the mission fails. Do not use createPlan as your deliverable; your FINAL MESSAGE
+      must contain the analysis AND end with the PROPOSED_STEPS block (per the contract
+      below). Rules for the steps you propose:
       - each step must be independently verifiable (its prompt says HOW to verify:
         `pnpm test`, build, etc.);
       - chain context with receives: so later steps see what earlier ones did;
