@@ -3,13 +3,52 @@ import { useCallback, useEffect, useReducer } from "react";
 
 import type { Action } from "../@types/action";
 import type { State } from "../@types/state";
+import {
+  applyUnary,
+  evaluateBinary,
+  formatConstant,
+  type ConstantName,
+} from "../lib/calculator-math";
 
 const initialValue: State = {
   overwrite: true,
   previousValue: "0",
+  mode: "basic",
+  angleMode: "deg",
 };
 
-function reducer(state: State, { type, payload }: Action) {
+function constantPayloadToName(constant: "pi" | "e"): ConstantName {
+  return constant === "pi" ? "π" : "e";
+}
+
+function evaluate(state: State): string {
+  try {
+    if (state.operation === "^") {
+      const base = state.overwrite
+        ? state.previousValue
+        : state.currentValue;
+      const exponent = state.overwrite
+        ? state.currentValue
+        : state.previousValue;
+      return evaluateBinary(
+        "^",
+        base || "",
+        exponent || "",
+        true,
+      );
+    }
+    return evaluateBinary(
+      state.operation!,
+      state.previousValue || "",
+      state.currentValue || "",
+      state.overwrite ?? false,
+    );
+  } catch {
+    return "Error";
+  }
+}
+
+export function reducer(state: State, { type, payload }: Action): State {
   switch (type) {
     case "CLEAR":
       return initialValue;
@@ -54,11 +93,19 @@ function reducer(state: State, { type, payload }: Action) {
         overwrite: true,
       };
     case "PERCENTAGE":
-      return {
-        ...state,
-        overwrite: true,
-        previousValue: new Big(state.previousValue).div(100).toString(),
-      };
+      try {
+        return {
+          ...state,
+          overwrite: true,
+          previousValue: new Big(state.previousValue).div(100).toString(),
+        };
+      } catch {
+        return {
+          ...state,
+          overwrite: true,
+          previousValue: "Error",
+        };
+      }
     case "INVERT":
       return {
         ...state,
@@ -77,34 +124,71 @@ function reducer(state: State, { type, payload }: Action) {
         overwrite: true,
         previousValue: evaluate(state),
       };
+    case "TOGGLE_MODE":
+      return {
+        ...state,
+        mode: state.mode === "scientific" ? "basic" : "scientific",
+      };
+    case "TOGGLE_ANGLE_MODE":
+      return {
+        ...state,
+        angleMode: state.angleMode === "rad" ? "deg" : "rad",
+      };
+    case "APPLY_FUNCTION": {
+      if (!payload?.fn) {
+        return state;
+      }
+      try {
+        return {
+          ...state,
+          previousValue: applyUnary(
+            payload.fn,
+            state.previousValue,
+            state.angleMode ?? "deg",
+          ),
+          overwrite: true,
+          currentValue: undefined,
+          operation: undefined,
+        };
+      } catch {
+        return {
+          ...state,
+          previousValue: "Error",
+          overwrite: true,
+          currentValue: undefined,
+          operation: undefined,
+        };
+      }
+    }
+    case "INSERT_CONSTANT": {
+      if (!payload?.constant) {
+        return state;
+      }
+      try {
+        const constantValue = formatConstant(
+          constantPayloadToName(payload.constant),
+        );
+        if (state.overwrite || state.previousValue === "0") {
+          return {
+            ...state,
+            overwrite: false,
+            previousValue: constantValue,
+          };
+        }
+        return {
+          ...state,
+          previousValue: `${state.previousValue}${constantValue}`,
+        };
+      } catch {
+        return {
+          ...state,
+          overwrite: true,
+          previousValue: "Error",
+        };
+      }
+    }
     default:
       return state;
-  }
-}
-
-function evaluate({
-  previousValue,
-  operation,
-  currentValue,
-  overwrite,
-}: State) {
-  const previous = Number.parseFloat(previousValue || "");
-  const current = Number.parseFloat(currentValue || "");
-  switch (operation) {
-    case "+":
-      return new Big(previous).plus(current).toString();
-    case "-":
-      return overwrite
-        ? new Big(previous).minus(current).toString()
-        : new Big(current).minus(previous).toString();
-    case "×":
-      return new Big(previous).mul(current).toString();
-    case "÷":
-      return overwrite
-        ? new Big(previous).div(current).toString()
-        : new Big(current).div(previous).toString();
-    default:
-      throw new Error(`Unknown operation ${operation}`);
   }
 }
 
@@ -115,9 +199,12 @@ export function useCalculator() {
     dispatch({ payload: { digit: number }, type: "ADD_DIGIT" });
   }, []);
 
-  const setOperation = useCallback((operation: "+" | "-" | "×" | "÷") => {
-    dispatch({ payload: { operation }, type: "SET_OPERATION" });
-  }, []);
+  const setOperation = useCallback(
+    (operation: "+" | "-" | "×" | "÷" | "^") => {
+      dispatch({ payload: { operation }, type: "SET_OPERATION" });
+    },
+    [],
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -156,7 +243,7 @@ export function useCalculator() {
       },
       {
         signal: controller.signal,
-      }
+      },
     );
 
     return () => {

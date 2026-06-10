@@ -1,6 +1,7 @@
 import type { Action } from "../@types/action";
 import type { State } from "../@types/state";
 import { CalculatorButton } from "./calculator-button";
+import { CalculatorScientificPanel } from "./calculator-scientific-panel";
 
 interface CalculatorBodyProps {
   state: State;
@@ -17,7 +18,18 @@ export function CalculatorBody({ state, dispatch }: CalculatorBodyProps) {
   };
 
   return (
-    <div className="grid w-72 grid-cols-4 grid-rows-5 gap-3">
+    <div className="flex w-72 flex-col gap-3">
+      <CalculatorButton
+        className={`!size-12 self-start text-xl ${state.mode === "scientific" ? "text-[#FF9500]" : ""}`}
+        onPress={() => dispatch({ type: "TOGGLE_MODE" })}
+        variant="clear"
+      >
+        2nd
+      </CalculatorButton>
+
+      <CalculatorScientificPanel dispatch={dispatch} state={state} />
+
+      <div className="grid grid-cols-4 grid-rows-5 gap-3">
       <CalculatorButton
         onPress={() => dispatch({ type: "CLEAR" })}
         variant="clear"
@@ -95,6 +107,7 @@ export function CalculatorBody({ state, dispatch }: CalculatorBodyProps) {
       >
         =
       </CalculatorButton>
+      </div>
     </div>
   );
 }

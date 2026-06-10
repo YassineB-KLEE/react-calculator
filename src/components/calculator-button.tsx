@@ -9,6 +9,8 @@ const CalculatorButtonStyles = cva({
       clear: "justify-center bg-[#6C6C6B] pressed:bg-[#8D8E8D]",
       number: "justify-center bg-[#4E4E4D] pressed:bg-[#808180]",
       operator: "justify-center bg-[#FF9500] pressed:bg-[#FCC78D]",
+      scientific:
+        "justify-center bg-[#6C6C6B] text-xl pressed:bg-[#8D8E8D]",
     },
   },
 });

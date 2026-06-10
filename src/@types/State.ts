@@ -1,6 +1,8 @@
 export interface State {
   previousValue: string;
   currentValue?: string | null;
-  operation?: "+" | "-" | "×" | "÷";
+  operation?: "+" | "-" | "×" | "÷" | "^";
   overwrite?: boolean;
+  mode?: "basic" | "scientific";
+  angleMode?: "deg" | "rad";
 }

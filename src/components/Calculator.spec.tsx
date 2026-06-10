@@ -1,11 +1,12 @@
 import { act, render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import { Calculator } from "./calculator";
+import { Calculator } from "./Calculator";
 
 describe("Calculator", () => {
   it("should render", () => {
-    expect(1 + 1).toBe(2);
+    const { getByRole } = render(<Calculator />);
+    expect(getByRole("button", { name: "1" })).toBeInTheDocument();
   });
   it("should be able to sum 2 numbers", () => {
     const { getByRole, container } = render(<Calculator />);

@@ -5,9 +5,15 @@ export interface Action {
     | "EVALUATE"
     | "PERCENTAGE"
     | "INVERT"
-    | "CLEAR";
+    | "CLEAR"
+    | "TOGGLE_MODE"
+    | "TOGGLE_ANGLE_MODE"
+    | "APPLY_FUNCTION"
+    | "INSERT_CONSTANT";
   payload?: {
     digit?: string;
-    operation?: "+" | "-" | "×" | "÷";
+    operation?: "+" | "-" | "×" | "÷" | "^";
+    fn?: "sin" | "cos" | "tan" | "ln" | "log10" | "exp" | "sqrt" | "factorial";
+    constant?: "pi" | "e";
   };
 }
