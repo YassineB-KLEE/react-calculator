@@ -1,0 +1,36 @@
+# Goal-style workflow — l'agenda n'est PAS fixé à l'avance. Tu donnes un objectif ;
+# l'éclaireur cartographie le dépôt puis PROPOSE les étapes nécessaires via un bloc
+# PROPOSED_STEPS ancré (contrat ajouté à son prompt au lancement). Rien n'est inséré
+# sans TON approbation : le run se met en pause sur une porte dédiée, et refuser
+# continue simplement sans insertion. Borné par dynamic.maxSteps, non récursif.
+name: marathon
+description: Objectif libre sur la calculatrice — l'éclaireur propose l'agenda ; chaque extension passe par votre approbation.
+dynamic:
+  maxSteps: 6
+inputs:
+  objectif:
+    required: true
+    description: L'objectif à atteindre, en langage naturel (peut être large — l'agenda se construit en cours de run)
+
+steps:
+  - id: scout
+    title: Éclaireur · cartographier l'objectif
+    agent: planner
+    mode: read-only
+    prompt: |
+      You are the scout of a long-running mission on this repository (a React 19 +
+      TypeScript + Vite + Tailwind calculator app, package manager: pnpm, tests: vitest).
+      Read the code first — at minimum src/, tests/, package.json — then break the
+      following objective into concrete, independently verifiable steps:
+
+      {{ inputs.objectif }}
+
+      In your final answer: a SHORT map of the relevant code (components, state logic,
+      where operations are computed), the risks, and the lots you identified. Then end
+      your result with a PROPOSED_STEPS block (per the contract below) creating the steps
+      needed to reach the objective. Rules for the steps you propose:
+      - each step must be independently verifiable (its prompt says HOW to verify:
+        `pnpm test`, build, etc.);
+      - chain context with receives: so later steps see what earlier ones did;
+      - finish with a final read-only recap step that judges whether the objective is met.
+      Do not modify any files yourself.

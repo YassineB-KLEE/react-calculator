@@ -1,0 +1,21 @@
+# Projet react-calculator — calculatrice React/TS/Vite/Tailwind (fork iOS-like).
+# Catalogue servi en local (AGENTIC_PROJECT_DIR) ; chaque run durable clone CE repo
+# GitHub dans son container et pousse sa branche agentic/run-… dessus (auth SSH via
+# la clef montée ~/.ssh/id_rsa — fallback dev, voir dockerSandbox.ts).
+name: react-calculator
+root: .
+
+apiKeyFile: ../../agentic-csr/.api_key_cursor
+
+workflowsDir: workflows
+
+repo:
+  url: git@github.com:YassineB-KLEE/react-calculator.git
+  ref: main
+  provider: github
+
+defaults:
+  runtime: local
+  model: { id: composer-2.5 }
+  sandbox: false
+  stallSeconds: 120
